@@ -180,38 +180,48 @@ function App() {
 
   return (
     <div
-      className="min-h-screen bg-cover bg-center flex items-center justify-center"
+      className="min-h-screen bg-cover bg-center flex items-center justify-center font-montserrat"
       style={{ 
-        backgroundImage: "url('/static-bg.png')", 
-        fontFamily: "'Montserrat', sans-serif" 
+        backgroundImage: "url('/sec-bg.jpg')", 
+        fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif" 
       }}
     >
       <LiquidGlass
       children={15}
-        cornerRadius={38}
+        cornerRadius={48}
         displacementScale={100}
-        blurAmount={0.3}
+        blurAmount={0.2}
         saturation={140}
         aberrationIntensity={1}
         elasticity={0.1}
         overLight={false}
         padding='18px 26px'
-        className='w-full mt-94 ml-80 border-3 border-white/40 rounded-[39px] bg-white/20'
+        className='w-full mt-94 ml-80 border-3 border-white/20 rounded-[50px] bg-white/20'
         >
 
-      <div style={{minWidth: '260px'}}>
-        <div className="">
+      <div style={{minWidth: '260px'}} className="font-montserrat">
+        <div className="font-montserrat">
           {/* Header */}
           <div className="text-center mb-6 sm:mb-8">
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-3 sm:mb-4 tracking-tight">
-              Twibbon MPLS STEMBAYO 2025
-            </h1>
+            <div className="flex items-center justify-center mb-3 sm:mb-4">
+              <img 
+                src="/stembayo.png" 
+                alt="Stembayo Logo" 
+                className="w-12 h-12 sm:w-16 sm:h-16 object-contain"
+              />
+              <div className="mx-4 sm:mx-6 w-0.5 h-12 sm:h-16 bg-white/60 to-transparent shadow-lg rounded-xl"></div>
+              <div className="text-left">
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-extrabold text-white tracking-tight leading-tight">
+                  Twibbon MPLS<br />STEMBAYO 2025
+                </h1>
+              </div>
+            </div>
             <div className="space-y-2">
-              <p className="text-white/90 text-sm sm:text-base leading-relaxed px-2 font-medium">
-                Selamat datang di website alternatif untuk twibbon MPLS Stembayo!
+              <p className="text-white/90 text-sm sm:text-base leading-none px-2 font-bold">
+                Selamat datang di web alternatif untuk twibbon MPLS Stembayo!
               </p>
-              <p className="text-white/60 text-xs sm:text-sm leading-relaxed px-2 font-normal">
-                Disini kalian dapat mendownload twibbon dengan resolusi tinggi tanpa watermark secara gratis!
+              <p className="text-white/60 text-xs sm:text-sm leading-3.5 px-2 font-semibold">
+                Disini kalian dapat mendownload twibbon dengan resolusi tinggi tanpa watermark!
               </p>
             </div>
           </div>
@@ -228,7 +238,7 @@ function App() {
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isProcessing}
-              className="w-full bg-gradient-to-r from-white/30 to-white/10 backdrop-blur-md border border-white/30 rounded-2xl p-3 sm:p-4 text-white font-medium transition-all duration-300 hover:border-white/40 active:scale-[0.98] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-white/30 to-white/10 backdrop-blur-md border border-white/30 rounded-3xl p-3 sm:p-4 text-white font-medium transition-all duration-300 hover:border-white/40 active:scale-[0.98] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <div className="flex items-center justify-center space-x-2">
                 <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,7 +261,7 @@ function App() {
 
           {/* Preview Container - Always Visible */}
           <div className="mb-4 sm:mb-6">
-            <div className="bg-gradient-to-r from-white/30 to-white/10 backdrop-blur-md border-2 border-dashed border-white/30 rounded-2xl p-3 sm:p-4">
+            <div className="bg-gradient-to-r from-white/30 to-white/10 backdrop-blur-md border-2 border-dashed border-white/30 rounded-4xl p-3 sm:p-4">
               {finalImage && (
                 <div className="flex items-center justify-between mb-3">
                   <button
@@ -335,22 +345,22 @@ function App() {
         <div className="fixed inset-0 bg-black/20 flex items-center backdrop-blur-xs justify-center p-3 sm:p-4 z-50">
           <LiquidGlass
               children={15}
-              cornerRadius={38}
+              cornerRadius={48}
               displacementScale={100}
               blurAmount={0.1}
-              saturation={140}
+              saturation={150}
               aberrationIntensity={1}
               elasticity={0.1}
               overLight={true}
               padding='18px 26px'
-              className='border-3 border-white/40 rounded-[39px] bg-white/40 w-full ml-78 mt-86 opacity-90'
+              className='border-3 border-white/40 rounded-[50px] bg-[#fe7ca728] w-full ml-78 mt-86 opacity-90'
             >
           <div className="w-full max-w-sm sm:max-w-md mx-auto">
             
               <div style={{minWidth: '260px'}}>
                 <h3 className="text-white font-extrabold mb-4 text-center text-md sm:text-base">Crop Foto Anda</h3>
                 
-                <div className="relative w-full h-56 sm:h-64 mb-4 rounded-2xl overflow-hidden bg-black/20">
+                <div className="relative w-full h-56 sm:h-64 mb-4 rounded-4xl overflow-hidden bg-black/20">
                   <Cropper
                     image={selectedImage}
                     crop={crop}
@@ -391,14 +401,14 @@ function App() {
                   <button
                     onClick={() => setShowCropper(false)}
                     disabled={isProcessing}
-                    className="flex-1 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl p-2.5 sm:p-3 text-white font-bold transition-all duration-300 hover:bg-white/20 active:scale-[0.98] touch-manipulation text-sm sm:text-base disabled:opacity-50"
+                    className="flex-1 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-2.5 sm:p-3 text-white font-bold transition-all duration-300 hover:bg-white/20 active:scale-[0.98] touch-manipulation text-sm sm:text-base disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     onClick={handleCropConfirm}
                     disabled={isProcessing}
-                    className="flex-1 bg-white/10 backdrop-blur-xl border border-white/30 rounded-xl p-2.5 sm:p-3 text-white font-extrabold transition-all duration-300 hover:bg-white/20 active:scale-[0.98] touch-manipulation text-sm sm:text-base disabled:opacity-50"
+                    className="flex-1 bg-white/20 backdrop-blur-xl border border-white/30 rounded-2xl p-2.5 sm:p-3 text-white font-extrabold transition-all duration-300 hover:bg-white/20 active:scale-[0.98] touch-manipulation text-sm sm:text-base disabled:opacity-50"
                   >
                     {isProcessing ? (
                       <div className="flex items-center justify-center space-x-2">
