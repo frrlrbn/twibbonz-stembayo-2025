@@ -12,6 +12,11 @@ function App() {
   const [finalImage, setFinalImage] = useState(null)
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState(null)
+  const [showCaptionForm, setShowCaptionForm] = useState(false)
+  const [captionData, setCaptionData] = useState({
+    namaLengkap: '',
+    kelasJurusan: ''
+  })
   const fileInputRef = useRef(null)
   const canvasRef = useRef(null)
 
@@ -141,38 +146,55 @@ function App() {
   }
 
   const shareToInstagram = () => {
-    if (finalImage) {
-      try {
-        // For better mobile sharing experience, try to use Web Share API
-        if (navigator.share) {
-          fetch(finalImage)
-            .then(res => res.blob())
-            .then(blob => {
-              const file = new File([blob], 'twibbon.png', { type: 'image/png' })
-              navigator.share({
-                title: 'Glass Twibbon',
-                text: 'Check out my awesome twibbon!',
-                files: [file]
-              })
-            })
-            .catch(() => {
-              // Fallback to opening Instagram
-              window.open('https://www.instagram.com/', '_blank')
-            })
-        } else {
-          // Fallback for browsers without Web Share API
-          window.open('https://www.instagram.com/', '_blank')
-        }
-      } catch (err) {
-        setError('Failed to share. Please download and share manually.')
-      }
-    }
+    setShowCaptionForm(true)
+  }
+
+  const generateCaption = () => {
+    return `🚀 𝐈'𝐦 𝐫𝐞𝐚𝐝𝐲 𝐟𝐨𝐫 𝐌𝐏𝐋𝐒 𝐒𝐌𝐊𝐍 𝟐 𝐃𝐞𝐩𝐨𝐤 𝟐𝟎𝟐𝟒 ✨
+
+"𝐊𝐧𝐨𝐰𝐥𝐞𝐝𝐠𝐞 𝐢𝐬 𝐩𝐨𝐰𝐞𝐫 𝐚𝐧𝐝 𝐩𝐨𝐰𝐞𝐫 𝐢𝐬 𝐜𝐡𝐚𝐫𝐚𝐜𝐭𝐞𝐫"
+Pengetahuan adalah kekuatan dan kekuatan adalah karakter
+
+𝐇𝐚𝐥𝐨𝐨 𝐤𝐚𝐰𝐚𝐧! 👋🤩
+Saya ${captionData.namaLengkap || '(Nama lengkap)'} dari ${captionData.kelasJurusan || '(kelas dan jurusan)'} Saya siap mengikuti masa pengenalan lingkungan sekolah dan menjadi bagian dari SMK Negeri 2 Depok Sleman yang mewujudkan generasi berpengetahuan, kuat, dan berkarakter.
+
+Untuk informasi lebih lanjut kunjungi Instagram resmi:
+@infompls.smkn2depoksleman
+@smkn2depoksleman.official
+@osis.stembayo
+@pkstembayo
+@humtik.stembayo
+
+Hashtags:
+#MPLSStembayo #MPLS2024 #MasaPengenalanLingkunganSekolah #Stembayo #SMKN2DepokSleman #ProudToBeSTEMBAYO`
+  }
+
+  const copyCaption = () => {
+    const caption = generateCaption()
+    navigator.clipboard.writeText(caption).then(() => {
+      // You could add a toast notification here
+      console.log('Caption copied to clipboard')
+    }).catch(() => {
+      // Fallback for older browsers
+      const textArea = document.createElement('textarea')
+      textArea.value = caption
+      document.body.appendChild(textArea)
+      textArea.select()
+      document.execCommand('copy')
+      document.body.removeChild(textArea)
+    })
+  }
+
+  const backToTwibbon = () => {
+    setShowCaptionForm(false)
   }
 
   const resetApp = () => {
     setSelectedImage(null)
     setFinalImage(null)
     setShowCropper(false)
+    setShowCaptionForm(false)
+    setCaptionData({ namaLengkap: '', kelasJurusan: '' })
     setError(null)
     setCrop({ x: 0, y: 0 })
     setZoom(1)
@@ -196,7 +218,9 @@ function App() {
         elasticity={0.1}
         overLight={false}
         padding='18px 26px'
-        className='w-full mt-94 ml-80 border-3 border-white/20 rounded-[50px] bg-white/20'
+        className={`w-full border-3 border-white/20 rounded-[50px] bg-white/20 ${
+          showCaptionForm ? 'mt-[500px] ml-[346px]' : 'mt-94 ml-80'
+        }`}
         >
 
       <div style={{minWidth: '260px'}} className="font-montserrat">
@@ -233,106 +257,189 @@ function App() {
             </div>
           )}
 
-          {/* Upload Button */}
-          <div className="mb-4 sm:mb-6">
-            <button
-              onClick={() => fileInputRef.current?.click()}
-              disabled={isProcessing}
-              className="w-full bg-gradient-to-r from-white/30 to-white/10 backdrop-blur-md border border-white/30 rounded-3xl p-3 sm:p-4 text-white font-medium transition-all duration-300 hover:border-white/40 active:scale-[0.98] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="flex items-center justify-center space-x-2">
-                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                <span className="text-sm sm:text-base font-bold">
-                  {isProcessing ? 'Processing...' : 'Pilih Fotomu'}
-                </span>
-              </div>
-            </button>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handleImageUpload}
-              className="hidden"
-              disabled={isProcessing}
-            />
-          </div>
-
-          {/* Preview Container - Always Visible */}
-          <div className="mb-4 sm:mb-6">
-            <div className="bg-gradient-to-r from-white/30 to-white/10 backdrop-blur-md border-2 border-dashed border-white/30 rounded-4xl p-3 sm:p-4">
-              {finalImage && (
-                <div className="flex items-center justify-between mb-3">
-                  <button
-                    onClick={resetApp}
-                    className="text-white/60 hover:text-white transition-colors"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+          {/* Upload Button or Caption Form */}
+          {!showCaptionForm ? (
+            <div className="mb-4 sm:mb-6">
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                disabled={isProcessing}
+                className="w-full bg-gradient-to-r from-white/30 to-white/10 backdrop-blur-md border border-white/30 rounded-3xl p-3 sm:p-4 text-white font-medium transition-all duration-300 hover:border-white/40 active:scale-[0.98] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <div className="flex items-center justify-center space-x-2">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span className="text-sm sm:text-base font-bold">
+                    {isProcessing ? 'Processing...' : 'Pilih Fotomu'}
+                  </span>
                 </div>
-              )}
-              
-              <div className="relative mx-auto w-40 h-40 sm:w-48 sm:h-48 rounded-2xl overflow-hidden">
-                {finalImage ? (
-                  <img
-                    src={finalImage}
-                    alt="Result"
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex flex-col items-center justify-center text-white/40">
-                    <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                    </svg>
+              </button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                className="hidden"
+                disabled={isProcessing}
+              />
+            </div>
+          ) : (
+            <div className="mb-4 sm:mb-6">
+              <div className="bg-gradient-to-r from-white/30 to-white/10 backdrop-blur-md border border-white/30 rounded-3xl p-4 sm:p-5 space-y-4">
+                <h3 className="text-white font-bold text-center text-sm sm:text-base mb-4">Buat Caption Instagram</h3>
+                
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-white/80 text-xs sm:text-sm mb-2 font-medium">Nama Lengkap</label>
+                    <input
+                      type="text"
+                      value={captionData.namaLengkap}
+                      onChange={(e) => setCaptionData({...captionData, namaLengkap: e.target.value})}
+                      placeholder="Contoh: Muhammad Farrel"
+                      className="w-full bg-white/10 border border-white/30 rounded-xl p-2.5 text-white placeholder-white/50 text-sm focus:outline-none focus:border-white/50 transition-colors"
+                    />
                   </div>
-                )}
+                  
+                  <div>
+                    <label className="block text-white/80 text-xs sm:text-sm mb-2 font-medium">Kelas dan Jurusan</label>
+                    <input
+                      type="text"
+                      value={captionData.kelasJurusan}
+                      onChange={(e) => setCaptionData({...captionData, kelasJurusan: e.target.value})}
+                      placeholder="Contoh: X SIJA B"
+                      className="w-full bg-white/10 border border-white/30 rounded-xl p-2.5 text-white placeholder-white/50 text-sm focus:outline-none focus:border-white/50 transition-colors"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
+
+          {/* Preview Container or Caption Preview */}
+          {!showCaptionForm ? (
+            <div className="mb-4 sm:mb-6">
+              <div className="bg-gradient-to-r from-white/30 to-white/10 backdrop-blur-md border-2 border-dashed border-white/30 rounded-4xl p-3 sm:p-4">
+                {finalImage && (
+                  <div className="flex items-center justify-between mb-3">
+                    <button
+                      onClick={resetApp}
+                      className="text-white/60 hover:text-white transition-colors"
+                    >
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+                
+                <div className="relative mx-auto w-40 h-40 sm:w-48 sm:h-48 rounded-2xl overflow-hidden">
+                  {finalImage ? (
+                    <img
+                      src={finalImage}
+                      alt="Result"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex flex-col items-center justify-center text-white/40">
+                      <svg className="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="mb-4 sm:mb-6">
+              <div className="bg-gradient-to-r from-white/30 to-white/10 backdrop-blur-md border-2 border-dashed border-white/30 rounded-4xl p-3 sm:p-4">
+                <h4 className="text-white font-extrabold text-xs sm:text-sm mb-3 text-center">Preview Caption</h4>
+                <div className="bg-black/20 rounded-2xl p-3 max-h-64 overflow-y-auto">
+                  <pre className="text-white/90 text-xs leading-relaxed font-normal whitespace-pre-wrap break-words">
+                    {generateCaption()}
+                  </pre>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Action Buttons - Always Visible */}
           <div className="flex space-x-2 sm:space-x-3">
             <button
-              onClick={downloadImage}
-              disabled={!finalImage}
+              onClick={showCaptionForm ? backToTwibbon : downloadImage}
+              disabled={showCaptionForm ? false : !finalImage}
               className={`flex-1 backdrop-blur-xl border rounded-2xl p-2.5 sm:p-3 text-white font-medium transition-all duration-300 active:scale-[0.98] touch-manipulation ${
-                finalImage 
+                showCaptionForm || finalImage
                   ? 'bg-white/30 border-white/30 hover:bg-white/20 active:scale-[0.98] touch-manipulation text-sm sm:text-base disabled:opacity-50 cursor-pointer' 
                   : 'bg-white/5 border-white/10 opacity-50 cursor-not-allowed'
               }`}
             >
               <div className="flex items-center justify-center space-x-1 sm:space-x-2">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span className="text-sm sm:text-base font-bold">Download</span>
+                {showCaptionForm ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                    <span className="text-sm sm:text-base font-bold">Back</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    <span className="text-sm sm:text-base font-bold">Download</span>
+                  </>
+                )}
               </div>
             </button>
             
             <button
-              onClick={shareToInstagram}
-              disabled={!finalImage}
+              onClick={showCaptionForm ? copyCaption : shareToInstagram}
+              disabled={showCaptionForm ? false : !finalImage}
               className={`flex-1 backdrop-blur-xl border rounded-2xl p-2.5 sm:p-3 text-white font-medium transition-all duration-300 active:scale-[0.98] touch-manipulation ${
-                finalImage 
+                showCaptionForm || finalImage
                   ? 'bg-white/30 border-white/30 hover:bg-white/20 active:scale-[0.98] touch-manipulation text-sm sm:text-base disabled:opacity-50 cursor-pointer' 
                   : 'bg-white/5 border-white/10 opacity-50 cursor-not-allowed'
               }`}
             >
               <div className="flex items-center justify-center space-x-1 sm:space-x-2">
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.40s-.644-1.44-1.439-1.44z"/>
-                </svg>
+                {showCaptionForm ? (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                    <span className="text-sm sm:text-base font-bold">Copy</span>
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z" />
+                    </svg>
+                    <span className="text-sm sm:text-base font-bold">Caption</span>
+                  </>
+                )}
               </div>
             </button>
           </div>
 
           {/* Instructions */}
-          <div className="mt-4 pt-3 border-t border-white/10">
+          <div className="mt-4 pt-3 border-t border-white/30 rounded-2xl">
             <p className="text-white/55 text-xs text-center">
-              Perlunya dingatakan jika website ini masih dalam tahap pengembangan, jika menemukan kendala bisa menghubungi <span className="text-blue-300">admin website</span>
+              Kika menemukan kendala pada website ini bisa menghubungi <a className="text-blue-200 hover:text-blue-300 transition-colors" href='https://api.whatsapp.com/send?phone=6281215219801&text=hai%20admint' target="_blank" 
+                rel="noopener noreferrer">admin website</a>
+            </p>
+          </div>
+
+          {/* Footer */}
+          <div className="mt-2 pt-2">
+            <p className="text-white/55 text-xs text-center">
+              Made with 🤍 by <a 
+                className="text-white/60 hover:text-white transition-colors font-medium" 
+                href="https://github.com/frrlverse" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                frrlverse
+              </a>
             </p>
           </div>
         </div>
