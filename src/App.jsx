@@ -241,11 +241,27 @@ function App() {
       canvas.width = 800
       canvas.height = 800
 
-      // Load user image
+      // Load user image terlebih dahulu
       const userImg = await createImage(userImage)
-      ctx.drawImage(userImg, 0, 0, 800, 800)
+      
+      // Hitung ukuran dan posisi untuk foto user (lebih kecil dan di tengah)
+      const photoSize = 520 
+      const centerX = (800 - photoSize) / 2 
+      const centerY = 120 
+      
+      // Buat clipping path untuk membuat foto menjadi lingkaran
+      ctx.save()
+      ctx.beginPath()
+      ctx.arc(centerX + photoSize/2, centerY + photoSize/2, photoSize/2, 0, Math.PI * 2)
+      ctx.clip()
+      
+      // Gambar foto user dengan ukuran yang lebih kecil di posisi yang tepat
+      ctx.drawImage(userImg, centerX, centerY, photoSize, photoSize)
+      
+      // Restore context
+      ctx.restore()
 
-      // Load twibbon overlay
+      // Load dan gambar twibbon overlay di atas foto user (layer paling depan)
       const twibbonImg = await createImage('/twibbon.png')
       ctx.drawImage(twibbonImg, 0, 0, 800, 800)
 
