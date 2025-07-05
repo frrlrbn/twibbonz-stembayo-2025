@@ -1,6 +1,7 @@
-import { useState, useRef, useCallback } from 'react'
+import { useState, useRef, useCallback, useEffect } from 'react'
 import Cropper from 'react-easy-crop'
 import LiquidGlass from 'liquid-glass-react'
+import QRCode from 'qrcode'
 import './App.css'
 
 function App() {
@@ -13,12 +14,85 @@ function App() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [error, setError] = useState(null)
   const [showCaptionForm, setShowCaptionForm] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [qrCodeUrl, setQrCodeUrl] = useState('')
   const [captionData, setCaptionData] = useState({
     namaLengkap: '',
     kelasJurusan: ''
   })
+  const [isCopied, setIsCopied] = useState(false)
+  const [isCompressing, setIsCompressing] = useState(false)
   const fileInputRef = useRef(null)
   const canvasRef = useRef(null)
+
+  // Check if device is mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      // More strict mobile detection - only smartphones
+      const userAgent = navigator.userAgent.toLowerCase()
+      const isMobileUserAgent = /android.*mobile|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)
+      const isSmallScreen = window.innerWidth <= 480 // Only very small screens
+      
+      // Consider it mobile only if it's both mobile user agent AND small screen
+      const isMobileDevice = isMobileUserAgent && isSmallScreen
+      
+      setIsMobile(isMobileDevice)
+    }
+
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  // Generate QR Code
+  useEffect(() => {
+    const generateQRCode = async () => {
+      try {
+        const url = window.location.href
+        const qrUrl = await QRCode.toDataURL(url, {
+          width: 200,
+          margin: 2,
+          color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+          }
+        })
+        setQrCodeUrl(qrUrl)
+      } catch (error) {
+        console.error('Error generating QR code:', error)
+      }
+    }
+
+    generateQRCode()
+  }, [])
+
+  // Persistensi caption mode - load dari localStorage saat app dimuat
+  useEffect(() => {
+    const savedCaptionMode = localStorage.getItem('glasstb_captionMode')
+    const savedCaptionData = localStorage.getItem('glasstb_captionData')
+    
+    if (savedCaptionMode === 'true') {
+      setShowCaptionForm(true)
+    }
+    
+    if (savedCaptionData) {
+      try {
+        const parsedData = JSON.parse(savedCaptionData)
+        setCaptionData(parsedData)
+      } catch (error) {
+        console.error('Error parsing saved caption data:', error)
+      }
+    }
+  }, [])
+
+  // Save caption state ke localStorage setiap kali berubah
+  useEffect(() => {
+    localStorage.setItem('glasstb_captionMode', showCaptionForm.toString())
+  }, [showCaptionForm])
+
+  useEffect(() => {
+    localStorage.setItem('glasstb_captionData', JSON.stringify(captionData))
+  }, [captionData])
 
   const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels)
@@ -32,24 +106,77 @@ function App() {
         setError('Please select a valid image file')
         return
       }
-      
-      // Validate file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        setError('File size too large. Please select an image under 10MB')
-        return
-      }
 
       setError(null)
+      setIsProcessing(true)
+      
       const reader = new FileReader()
-      reader.onload = (e) => {
-        setSelectedImage(e.target.result)
-        setShowCropper(true)
+      reader.onload = async (e) => {
+        try {
+          let imageDataUrl = e.target.result
+          
+          // Jika file lebih dari 4MB, lakukan kompresi
+          if (file.size > 4 * 1024 * 1024) {
+            setIsCompressing(true)
+            imageDataUrl = await compressImage(imageDataUrl, 0.8) // Kompresi dengan quality 80%
+            setIsCompressing(false)
+          }
+          
+          setSelectedImage(imageDataUrl)
+          setShowCropper(true)
+        } catch (error) {
+          setError('Failed to process the image. Please try again.')
+          console.error('Image compression error:', error)
+          setIsCompressing(false)
+        } finally {
+          setIsProcessing(false)
+        }
       }
       reader.onerror = () => {
         setError('Failed to read the image file')
+        setIsProcessing(false)
+        setIsCompressing(false)
       }
       reader.readAsDataURL(file)
     }
+  }
+
+  const compressImage = (dataUrl, quality = 0.8) => {
+    return new Promise((resolve, reject) => {
+      const img = new Image()
+      img.onload = () => {
+        const canvas = document.createElement('canvas')
+        const ctx = canvas.getContext('2d')
+        
+        // Hitung ukuran baru untuk mengoptimalkan kompresi
+        let { width, height } = img
+        const maxDimension = 1920 // Maksimal 1920px untuk dimensi terbesar
+        
+        if (width > height) {
+          if (width > maxDimension) {
+            height = (height * maxDimension) / width
+            width = maxDimension
+          }
+        } else {
+          if (height > maxDimension) {
+            width = (width * maxDimension) / height
+            height = maxDimension
+          }
+        }
+        
+        canvas.width = width
+        canvas.height = height
+        
+        // Gambar image yang sudah diresize
+        ctx.drawImage(img, 0, 0, width, height)
+        
+        // Konversi ke dataURL dengan kompresi
+        const compressedDataUrl = canvas.toDataURL('image/jpeg', quality)
+        resolve(compressedDataUrl)
+      }
+      img.onerror = reject
+      img.src = dataUrl
+    })
   }
 
   const createImage = (url) =>
@@ -146,7 +273,10 @@ function App() {
   }
 
   const shareToInstagram = () => {
-    setShowCaptionForm(true)
+    // Refresh otomatis sebelum masuk mode caption
+    window.location.reload()
+    // Set caption mode akan dihandle oleh localStorage setelah refresh
+    localStorage.setItem('glasstb_captionMode', 'true')
   }
 
   const generateCaption = () => {
@@ -172,8 +302,11 @@ Hashtags:
   const copyCaption = () => {
     const caption = generateCaption()
     navigator.clipboard.writeText(caption).then(() => {
-      // You could add a toast notification here
-      console.log('Caption copied to clipboard')
+      // Set status copied dan reset setelah 2 detik
+      setIsCopied(true)
+      setTimeout(() => {
+        setIsCopied(false)
+      }, 2000)
     }).catch(() => {
       // Fallback for older browsers
       const textArea = document.createElement('textarea')
@@ -182,11 +315,26 @@ Hashtags:
       textArea.select()
       document.execCommand('copy')
       document.body.removeChild(textArea)
+      
+      // Set status copied dan reset setelah 2 detik
+      setIsCopied(true)
+      setTimeout(() => {
+        setIsCopied(false)
+      }, 2000)
     })
   }
 
   const backToTwibbon = () => {
+    // Clear localStorage saat back ke mode normal
+    localStorage.removeItem('glasstb_captionMode')
+    localStorage.removeItem('glasstb_captionData')
     setShowCaptionForm(false)
+    setIsCopied(false) // Reset copied state
+    // Reset caption data
+    setCaptionData({
+      namaLengkap: '',
+      kelasJurusan: ''
+    })
   }
 
   const resetApp = () => {
@@ -196,6 +344,7 @@ Hashtags:
     setShowCaptionForm(false)
     setCaptionData({ namaLengkap: '', kelasJurusan: '' })
     setError(null)
+    setIsCompressing(false)
     setCrop({ x: 0, y: 0 })
     setZoom(1)
   }
@@ -208,6 +357,90 @@ Hashtags:
         fontFamily: "'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif" 
       }}
     >
+      {/* Mobile Only Warning for Desktop/Tablet */}
+      {!isMobile && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+          <div className="bg-white/20 backdrop-blur-xl border border-white/30 rounded-3xl shadow-2xl shadow-black/50 max-w-lg mx-auto p-8">
+            <div className="text-center space-y-6">
+              <div className="space-y-4">
+                <div className="flex justify-center">
+                  <svg className="w-16 h-16 text-white/80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                  </svg>
+                </div>
+                
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-extrabold text-white">
+                    Mobile Only
+                  </h2>
+                  <p className="text-white/80 text-lg font-semibold">
+                    Website Khusus Mobile!
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <p className="text-white/90 text-sm leading-relaxed">
+                  Website ini dirancang khusus untuk perangkat mobile. Untuk pengalaman terbaik, silakan buka website ini menggunakan:
+                </p>
+                
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20">
+                    <div className="font-semibold text-white mb-1">📱 Smartphone</div>
+                    <div className="text-white/70">Android / iOS</div>
+                  </div>
+                  <div className="bg-white/10 backdrop-blur-md rounded-xl p-3 border border-white/20">
+                    <div className="font-semibold text-white mb-1">📱 Mobile Web</div>
+                    <div className="text-white/70">Browser Mobile</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <p className="text-white/70 text-xs">
+                  Scan QR code ini dengan HP Anda atau salin URL berikut:
+                </p>
+                
+                {/* QR Code */}
+                {qrCodeUrl && (
+                  <div className="flex justify-center mb-4">
+                    <div className="bg-white rounded-2xl p-3 border border-white/20">
+                      <img 
+                        src={qrCodeUrl} 
+                        alt="QR Code" 
+                        className="w-32 h-32 mx-auto"
+                      />
+                    </div>
+                  </div>
+                )}
+                
+                <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+                  <div className="bg-white rounded-xl p-3">
+                    <div className="text-black text-xs font-mono break-all select-all">
+                      {window.location.href}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-white/20">
+                <p className="text-white/55 text-xs text-center">
+              Made with 🤍 by <a 
+                className="text-white/60 hover:text-white transition-colors font-medium" 
+                href="https://frl.blue" 
+                target="_blank" 
+                rel="noopener noreferrer"
+              >
+                frrlverse
+              </a>
+            </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main App Content */}
       <LiquidGlass
       children={15}
         cornerRadius={48}
@@ -220,7 +453,7 @@ Hashtags:
         padding='18px 26px'
         className={`w-full border-3 border-white/20 rounded-[50px] bg-white/20 ${
           showCaptionForm ? 'mt-[500px] ml-[346px]' : 'mt-94 ml-80'
-        }`}
+        } ${!isMobile ? 'opacity-20 pointer-events-none' : ''}`}
         >
 
       <div style={{minWidth: '260px'}} className="font-montserrat">
@@ -257,20 +490,32 @@ Hashtags:
             </div>
           )}
 
+          {/* Compression Info Message */}
+          {isCompressing && (
+            <div className="mb-4 p-3 bg-blue-500/20 border border-blue-500/30 rounded-2xl">
+              <p className="text-blue-200 text-xs sm:text-sm text-center">
+                File lebih dari 4MB, sedang mengompres untuk kualitas optimal...
+              </p>
+            </div>
+          )}
+
           {/* Upload Button or Caption Form */}
           {!showCaptionForm ? (
             <div className="mb-4 sm:mb-6">
               <button
                 onClick={() => fileInputRef.current?.click()}
-                disabled={isProcessing}
+                disabled={isProcessing || isCompressing}
                 className="w-full bg-gradient-to-r from-white/30 to-white/10 backdrop-blur-md border border-white/30 rounded-3xl p-3 sm:p-4 text-white font-medium transition-all duration-300 hover:border-white/40 active:scale-[0.98] touch-manipulation disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <div className="flex items-center justify-center space-x-2">
+                  {isCompressing && (
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  )}
                   <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                   </svg>
                   <span className="text-sm sm:text-base font-bold">
-                    {isProcessing ? 'Processing...' : 'Pilih Fotomu'}
+                    {isCompressing ? 'Compressing...' : isProcessing ? 'Processing...' : 'Pilih Fotomu'}
                   </span>
                 </div>
               </button>
@@ -280,7 +525,7 @@ Hashtags:
                 accept="image/*"
                 onChange={handleImageUpload}
                 className="hidden"
-                disabled={isProcessing}
+                disabled={isProcessing || isCompressing}
               />
             </div>
           ) : (
@@ -395,19 +640,32 @@ Hashtags:
             <button
               onClick={showCaptionForm ? copyCaption : shareToInstagram}
               disabled={showCaptionForm ? false : !finalImage}
-              className={`flex-1 backdrop-blur-xl border rounded-2xl p-2.5 sm:p-3 text-white font-medium transition-all duration-300 active:scale-[0.98] touch-manipulation ${
+              className={`flex-1 backdrop-blur-xl border rounded-2xl p-2.5 sm:p-3 font-medium transition-all duration-300 active:scale-[0.98] touch-manipulation ${
                 showCaptionForm || finalImage
-                  ? 'bg-white/30 border-white/30 hover:bg-white/20 active:scale-[0.98] touch-manipulation text-sm sm:text-base disabled:opacity-50 cursor-pointer' 
-                  : 'bg-white/5 border-white/10 opacity-50 cursor-not-allowed'
+                  ? isCopied && showCaptionForm
+                    ? 'bg-green-500/30 border-green-500/40 hover:bg-green-500/25 text-green-100 cursor-pointer'
+                    : 'bg-white/30 border-white/30 hover:bg-white/20 text-white cursor-pointer'
+                  : 'bg-white/5 border-white/10 opacity-50 cursor-not-allowed text-white'
               }`}
             >
               <div className="flex items-center justify-center space-x-1 sm:space-x-2">
                 {showCaptionForm ? (
                   <>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                    </svg>
-                    <span className="text-sm sm:text-base font-bold">Copy</span>
+                    {isCopied ? (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-sm sm:text-base font-bold">Copied!</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                        <span className="text-sm sm:text-base font-bold">Copy</span>
+                      </>
+                    )}
                   </>
                 ) : (
                   <>
@@ -424,7 +682,7 @@ Hashtags:
           {/* Instructions */}
           <div className="mt-4 pt-3 border-t border-white/30 rounded-2xl">
             <p className="text-white/55 text-xs text-center">
-              Kika menemukan kendala pada website ini bisa menghubungi <a className="text-blue-200 hover:text-blue-300 transition-colors" href='https://api.whatsapp.com/send?phone=6281215219801&text=hai%20admint' target="_blank" 
+              Jika menemukan kendala pada website ini bisa menghubungi <a className="text-blue-200 hover:text-blue-300 transition-colors" href='https://api.whatsapp.com/send?phone=6281215219801&text=hai%20admint' target="_blank" 
                 rel="noopener noreferrer">admin website</a>
             </p>
           </div>
@@ -434,7 +692,7 @@ Hashtags:
             <p className="text-white/55 text-xs text-center">
               Made with 🤍 by <a 
                 className="text-white/60 hover:text-white transition-colors font-medium" 
-                href="https://github.com/frrlverse" 
+                href="https://frl.blue" 
                 target="_blank" 
                 rel="noopener noreferrer"
               >
@@ -448,7 +706,7 @@ Hashtags:
 </LiquidGlass>
 
       {/* Cropper Modal */}
-      {showCropper && (
+      {showCropper && isMobile && (
         <div className="fixed inset-0 bg-black/20 flex items-center backdrop-blur-xs justify-center p-3 sm:p-4 z-50">
           <LiquidGlass
               children={15}
