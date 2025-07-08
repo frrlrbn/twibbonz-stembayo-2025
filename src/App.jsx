@@ -325,23 +325,18 @@ function App() {
   }
 
   const generateCaption = () => {
-    return `🚀 𝐈'𝐦 𝐫𝐞𝐚𝐝𝐲 𝐟𝐨𝐫 𝐌𝐏𝐋𝐒 𝐒𝐌𝐊𝐍 𝟐 𝐃𝐞𝐩𝐨𝐤 𝟐𝟎𝟐𝟒 ✨
+    return `𝐈'𝐦 𝐑𝐞𝐚𝐝𝐲 𝐅𝐨𝐫 𝐌𝐏𝐋𝐒 𝐒𝐌𝐊𝐍 𝟐 𝐃𝐞𝐩𝐨𝐤 𝟐𝟎𝟐𝟓 ⭐
 
-"𝐊𝐧𝐨𝐰𝐥𝐞𝐝𝐠𝐞 𝐢𝐬 𝐩𝐨𝐰𝐞𝐫 𝐚𝐧𝐝 𝐩𝐨𝐰𝐞𝐫 𝐢𝐬 𝐜𝐡𝐚𝐫𝐚𝐜𝐭𝐞𝐫"
-Pengetahuan adalah kekuatan dan kekuatan adalah karakter
+"𝚁𝚎𝚊𝚕𝚒𝚣𝚒𝚗𝚐 𝚊 𝚜𝚞𝚙𝚎𝚛𝚒𝚘𝚛 𝚐𝚎𝚗𝚎𝚛𝚊𝚝𝚒𝚘𝚗, 𝚌𝚑𝚊𝚛𝚊𝚌𝚝𝚎𝚛𝚒𝚣𝚎𝚍, 𝚌𝚘𝚖𝚙𝚎𝚝𝚎𝚗𝚝 𝚊𝚗𝚍 𝚎𝚗𝚟𝚒𝚛𝚘𝚗𝚖𝚎𝚗𝚝𝚊𝚕𝚕𝚢 𝚜𝚘𝚞𝚗𝚍"
+Mewujudkan generasi unggul, berkarakter, kompeten dan berwawasan lingkungan.
 
-𝐇𝐚𝐥𝐨𝐨 𝐤𝐚𝐰𝐚𝐧! 👋🤩
-Saya ${captionData.namaLengkap || '(Nama lengkap)'} dari ${captionData.kelasJurusan || '(kelas dan jurusan)'} Saya siap mengikuti masa pengenalan lingkungan sekolah dan menjadi bagian dari SMK Negeri 2 Depok Sleman yang mewujudkan generasi berpengetahuan, kuat, dan berkarakter.
+Halo future leaders! 👋✨
+Saya ${captionData.namaLengkap || '(Nama lengkap)'} dari ${captionData.kelasJurusan || '(kelas & jurusan)'} Siap bergabung dalam Masa Pengenalan Lingkungan Sekolah dan menjadi bagian dari SMKN 2 Depok Sleman yang mewujudkan generasi unggul, berkarakter, kompeten dan berwawasan lingkungan 🌱
 
-Untuk informasi lebih lanjut kunjungi Instagram resmi:
-@infompls.smkn2depoksleman
-@smkn2depoksleman.official
-@osis.stembayo
-@pkstembayo
-@humtik.stembayo
+Untuk informasi lebih lanjut kunjungi Instagram resmi 📝
+@infompls.smkn2depoksleman | @smkn2depoksleman.official | @osis.stembayo | @pkstembayo | @humtik.stembayo
 
-Hashtags:
-#MPLSStembayo #MPLS2024 #MasaPengenalanLingkunganSekolah #Stembayo #SMKN2DepokSleman #ProudToBeSTEMBAYO`
+#MPLSStembayo #MPLS2025 #MasaPengenalanLingkunganSekolah #Stembayo #SMKN2DepokSleman #smkn2depok #ProudToBeSTEMBAYO #SMKBisaHebat `
   }
 
   const copyCaption = () => {
@@ -991,6 +986,8 @@ Hashtags:
                     </div>
                   </div>
                 </div>
+
+                
               </div>
             </div>
           </LiquidGlass>
