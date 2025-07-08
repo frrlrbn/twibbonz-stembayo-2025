@@ -167,3 +167,30 @@ input, textarea, button, select {
   animation: scaleIn 0.3s ease-out;
 }
 
+/* 404 Page Specific Animations */
+@keyframes notFoundGlow {
+  0%, 100% {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+  }
+  50% {
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.2);
+  }
+}
+
+@keyframes notFoundFloat {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.not-found-404 {
+  animation: notFoundGlow 3s ease-in-out infinite;
+}
+
+.not-found-icon {
+  animation: notFoundFloat 2s ease-in-out infinite;
+}
+

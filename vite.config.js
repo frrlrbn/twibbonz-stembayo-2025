@@ -10,6 +10,17 @@ export default defineConfig({
       strict: false,
     }
   },
+  build: {
+    rollupOptions: {
+      // Handle SPA routing for production
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          router: ['react-router-dom']
+        }
+      }
+    }
+  },
   plugins: [
     react(),
     tailwindcss()
