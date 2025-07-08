@@ -22,6 +22,7 @@ function App() {
   })
   const [isCopied, setIsCopied] = useState(false)
   const [isCompressing, setIsCompressing] = useState(false)
+  const [showThanksModal, setShowThanksModal] = useState(false)
   const fileInputRef = useRef(null)
   const canvasRef = useRef(null)
 
@@ -93,6 +94,21 @@ function App() {
   useEffect(() => {
     localStorage.setItem('glasstb_captionData', JSON.stringify(captionData))
   }, [captionData])
+
+  // Auto close thanks modal after 10 seconds
+  useEffect(() => {
+    let timeoutId
+    if (showThanksModal) {
+      timeoutId = setTimeout(() => {
+        setShowThanksModal(false)
+      }, 10000) // 10 seconds
+    }
+    return () => {
+      if (timeoutId) {
+        clearTimeout(timeoutId)
+      }
+    }
+  }, [showThanksModal])
 
   const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels)
@@ -193,8 +209,13 @@ function App() {
     const canvas = document.createElement('canvas')
     const ctx = canvas.getContext('2d')
 
-    canvas.width = 800
-    canvas.height = 800
+    // Tingkatkan resolusi untuk kualitas tinggi (2048x2048)
+    canvas.width = 2048
+    canvas.height = 2048
+
+    // Enable image smoothing untuk kualitas terbaik
+    ctx.imageSmoothingEnabled = true
+    ctx.imageSmoothingQuality = 'high'
 
     ctx.drawImage(
       image,
@@ -204,15 +225,15 @@ function App() {
       pixelCrop.height,
       0,
       0,
-      800,
-      800
+      2048,
+      2048
     )
 
     return new Promise((resolve) => {
       canvas.toBlob((blob) => {
         const url = URL.createObjectURL(blob)
         resolve(url)
-      })
+      }, 'image/png', 1.0) // PNG untuk kualitas lossless
     })
   }
 
@@ -238,16 +259,21 @@ function App() {
       const canvas = canvasRef.current
       const ctx = canvas.getContext('2d')
       
-      canvas.width = 800
-      canvas.height = 800
+      // Tingkatkan resolusi untuk kualitas tinggi (2048x2048)
+      canvas.width = 2048
+      canvas.height = 2048
+
+      // Enable image smoothing dan pengaturan kualitas terbaik
+      ctx.imageSmoothingEnabled = true
+      ctx.imageSmoothingQuality = 'high'
 
       // Load user image terlebih dahulu
       const userImg = await createImage(userImage)
       
-      // Hitung ukuran dan posisi untuk foto user (lebih kecil dan di tengah)
-      const photoSize = 520 
-      const centerX = (800 - photoSize) / 2 
-      const centerY = 120 
+      // Hitung ukuran dan posisi untuk foto user (sesuaikan dengan resolusi tinggi)
+      const photoSize = 1331 // 520 * 2.56 (scaling factor untuk 2048px)
+      const centerX = (2048 - photoSize) / 2 
+      const centerY = 307 // 120 * 2.56 (scaling factor untuk 2048px)
       
       // Buat clipping path untuk membuat foto menjadi lingkaran
       ctx.save()
@@ -263,13 +289,13 @@ function App() {
 
       // Load dan gambar twibbon overlay di atas foto user (layer paling depan)
       const twibbonImg = await createImage('/twibbon.png')
-      ctx.drawImage(twibbonImg, 0, 0, 800, 800)
+      ctx.drawImage(twibbonImg, 0, 0, 2048, 2048)
 
-      // Convert to blob and create URL
+      // Convert to blob and create URL dengan kualitas maksimum
       canvas.toBlob((blob) => {
         const url = URL.createObjectURL(blob)
         setFinalImage(url)
-      }, 'image/png', 1.0)
+      }, 'image/png', 1.0) // PNG dengan kualitas maksimum
     } catch (err) {
       throw new Error('Failed to combine images')
     }
@@ -279,9 +305,12 @@ function App() {
     if (finalImage) {
       try {
         const link = document.createElement('a')
-        link.download = `twibbon-${Date.now()}.png`
+        link.download = `twibbon-mpls-stembayo-2025-${Date.now()}.png`
         link.href = finalImage
         link.click()
+        
+        // Show thanks modal after successful download
+        setShowThanksModal(true)
       } catch (err) {
         setError('Failed to download the image. Please try again.')
       }
@@ -358,11 +387,16 @@ Hashtags:
     setFinalImage(null)
     setShowCropper(false)
     setShowCaptionForm(false)
+    setShowThanksModal(false)
     setCaptionData({ namaLengkap: '', kelasJurusan: '' })
     setError(null)
     setIsCompressing(false)
     setCrop({ x: 0, y: 0 })
     setZoom(1)
+  }
+
+  const closeThanksModal = () => {
+    setShowThanksModal(false)
   }
 
   return (
@@ -806,6 +840,161 @@ Hashtags:
             </LiquidGlass>
           </div>
         
+      )}
+
+      {/* Thanks Modal */}
+      {showThanksModal && isMobile && (
+        <div className="fixed inset-0 bg-black/40 flex items-center backdrop-blur-sm justify-center p-3 sm:p-4 z-50">
+          <LiquidGlass
+            children={15}
+            cornerRadius={48}
+            displacementScale={100}
+            blurAmount={0.1}
+            saturation={150}
+            aberrationIntensity={1}
+            elasticity={0.1}
+            overLight={true}
+            padding='18px 26px'
+            className='border-3 border-white/40 rounded-[50px] bg-[#fe7ca728] w-full ml-80 mt-124 opacity-95'
+          >
+            <div className="w-full max-w-sm sm:max-w-md mx-auto">
+              <div style={{minWidth: '260px'}} className="text-center relative overflow-hidden">
+                {/* Animated Background Elements */}
+                <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                  <div className="absolute top-4 left-4 w-2 h-2 bg-white/30 rounded-full animate-ping"></div>
+                  <div className="absolute top-8 right-6 w-1 h-1 bg-white/40 rounded-full animate-pulse"></div>
+                  <div className="absolute bottom-8 left-6 w-1.5 h-1.5 bg-white/20 rounded-full animate-bounce"></div>
+                  <div className="absolute bottom-4 right-4 w-1 h-1 bg-white/30 rounded-full animate-ping delay-500"></div>
+                  
+                  {/* Additional floating elements */}
+                  <div className="absolute top-12 right-12 w-0.5 h-0.5 bg-yellow-300/40 rounded-full animate-pulse delay-1000"></div>
+                  <div className="absolute top-20 left-12 w-0.5 h-0.5 bg-blue-300/40 rounded-full animate-bounce delay-700"></div>
+                  <div className="absolute bottom-16 right-8 w-0.5 h-0.5 bg-purple-300/40 rounded-full animate-ping delay-300"></div>
+                  
+                </div>
+
+                {/* Close Button */}
+                <div className="flex justify-end mb-2 relative z-10">
+                  <button
+                    onClick={closeThanksModal}
+                    className="text-white/60 hover:text-white transition-all duration-300 p-1.5 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 hover:scale-110 active:scale-95"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* Thanks GIF with Enhanced Container */}
+                <div className="mb-6 flex justify-center relative">
+                  <div className="relative group">
+                    {/* Multiple glowing ring effects */}
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/20 to-white/10 blur-sm group-hover:blur-md transition-all duration-500 scale-110 animate-pulse"></div>
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-yellow-300/10 to-orange-300/10 blur-md transition-all duration-500 scale-125 animate-pulse delay-200"></div>
+                    
+                    {/* GIF Container */}
+                    <div className="relative bg-white/10 backdrop-blur-md border border-white/30 rounded-full p-2 shadow-2xl group-hover:shadow-3xl transition-all duration-500 group-hover:scale-105">
+                      <div className="bg-gradient-to-br from-white/10 to-white/5 rounded-full p-1">
+                        <img 
+                          src="/thanks.gif" 
+                          alt="Thank You" 
+                          className="w-20 h-20 sm:w-28 sm:h-28 object-contain rounded-full relative z-10"
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Floating sparkles with better positioning */}
+                    <div className="absolute -top-1 -right-1 text-yellow-300 animate-bounce text-sm">✨</div>
+                    <div className="absolute -bottom-1 -left-1 text-blue-300 animate-pulse text-xs">💫</div>
+                    <div className="absolute top-2 -left-2 text-purple-300 animate-bounce delay-300 text-xs">⭐</div>
+                    <div className="absolute -bottom-2 right-2 text-green-300 animate-pulse delay-700 text-xs">🌟</div>
+                  </div>
+                </div>
+
+                {/* Thank You Message with Enhanced Typography */}
+                <div className="space-y-4 mb-4 relative z-10">
+                  <div className="relative">
+                    <h3 className="text-white font-extrabold text-3xl sm:text-2xl mb-2 relative">
+                      <span className="bg-gradient-to-r from-white via-white/90 to-white bg-clip-text text-transparent">
+                        Terima Kasih!
+                      </span>
+                    </h3>
+                    {/* Subtle underline effect */}
+                    <div className="w-16 h-0.5 bg-gradient-to-r from-white/60 to-transparent mx-auto rounded-full"></div>
+                  </div>
+                  
+                  <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-2xl p-4 space-y-3">
+                    <p className="text-white/90 text-sm sm:text-base leading-4 font-medium">
+                      <p className='font-extrabold'>Download berhasil!</p> Jika website ini membantu, ayo beri untuk support agar admin bisa terus berkembang! <span className="ml-1 text-yellow-300 animate-pulse">✨</span>
+                    </p>
+                  </div>
+                  
+                </div>
+
+                {/* Enhanced Support Button */}
+                <div className="space-y-4 relative z-10">
+                  <div className="relative group">
+                    {/* Multiple glow layers for depth */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/30 to-orange-500/30 rounded-2xl blur-sm group-hover:blur-md transition-all duration-300 scale-105 opacity-60"></div>
+                    <div className="absolute inset-0 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 rounded-2xl blur-lg group-hover:blur-xl transition-all duration-300 scale-110 opacity-40"></div>
+                    
+                    <a
+                      href="https://saweria.co/frrlverse"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="relative block w-full bg-gradient-to-r from-yellow-500/40 to-orange-500/40 backdrop-blur-md border border-yellow-400/50 rounded-2xl p-4 text-white font-bold transition-all duration-300 hover:border-yellow-400/70 hover:from-yellow-500/50 hover:to-orange-500/50 active:scale-[0.98] touch-manipulation shadow-lg hover:shadow-xl group"
+                    >
+                      <div className="flex items-center justify-center space-x-3">
+                        <div className="bg-yellow-400/20 rounded-full p-2 group-hover:bg-yellow-400/30 transition-all duration-300 group-hover:scale-110">
+                          <span className="text-yellow-200 text-lg transition-transform duration-300 inline-block">⭐</span>
+                        </div>
+                        <div className="flex flex-col items-center space-y-1">
+                          <span className="text-sm sm:text-base bg-gradient-to-r from-yellow-100 to-orange-100 bg-clip-text text-transparent">
+                            Saweria
+                          </span>
+                          <div className="flex items-center space-x-1 text-yellow-200/80 text-xs">
+                            <span>Buat beli jajan 😅</span>
+                            <div className="w-1 h-1 bg-yellow-300/60 rounded-full animate-pulse"></div>
+                          </div>
+                        </div>
+                        <svg className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                        </svg>
+                      </div>
+                    </a>
+                  </div>
+
+                  {/* Auto-close timer with enhanced progress bar */}
+                  <div className="bg-white/5 backdrop-blur-sm border border-white/20 rounded-xl p-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse"></div>
+                        <p className="text-white/60 text-xs">
+                          Tertutup otomatis
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-1 text-white/60">
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span className="text-xs font-mono">10s</span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-white/10 rounded-full h-1.5 overflow-hidden">
+                      <div 
+                        className="bg-gradient-to-r from-pink-500/80 via-pink-400/80 to-pink-300/80 h-1.5 rounded-full transition-all duration-100 ease-linear shadow-sm"
+                        style={{
+                          animation: showThanksModal ? 'countdown 10s linear forwards' : 'none',
+                          width: '100%'
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </LiquidGlass>
+        </div>
       )}
 
       {/* Hidden canvas for image processing */}
