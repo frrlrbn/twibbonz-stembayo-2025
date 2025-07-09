@@ -7,23 +7,15 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
-    errorElement: <NotFound />,
   },
   {
-    path: "/panitia",
+    path: "/panitia", 
     element: <Panitia />,
-    errorElement: <NotFound />,
   },
-  // Catch all unmatched routes
   {
     path: "*",
     element: <NotFound />,
   },
-], {
-  basename: import.meta.env.BASE_URL || '/',
-  future: {
-    v7_normalizeFormMethod: true,
-  }
-})
+])
 
 export default router
