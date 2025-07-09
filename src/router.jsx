@@ -7,10 +7,12 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <NotFound />,
   },
   {
     path: "/panitia",
     element: <Panitia />,
+    errorElement: <NotFound />,
   },
   // Catch all unmatched routes
   {
@@ -18,7 +20,7 @@ const router = createBrowserRouter([
     element: <NotFound />,
   },
 ], {
-  // Add error handling for router itself
+  basename: import.meta.env.BASE_URL || '/',
   future: {
     v7_normalizeFormMethod: true,
   }
