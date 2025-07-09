@@ -762,7 +762,7 @@ Untuk informasi lebih lanjut kunjungi Instagram resmi 📝
               elasticity={0.1}
               overLight={true}
               padding='18px 26px'
-              className='border-3 border-white/40 rounded-[50px] bg-[#fe7ca728] w-full ml-78 mt-86 opacity-90'
+              className='border-3 border-white/40 rounded-[50px] bg-[#fe7ca728] w-full ml-78 mt-96 opacity-90'
             >
           <div className="w-full max-w-sm sm:max-w-md mx-auto">
             
@@ -779,10 +779,18 @@ Untuk informasi lebih lanjut kunjungi Instagram resmi 📝
                     onZoomChange={setZoom}
                     onCropComplete={onCropComplete}
                     cropShape="rect"
-                    showGrid={false}
+                    showGrid={true}
+                    restrictPosition={false}
+                    minZoom={0.1}
+                    maxZoom={10}
+                    objectFit="contain"
                     style={{
                       containerStyle: {
                         borderRadius: '1rem',
+                      },
+                      cropAreaStyle: {
+                        border: '2px solid rgba(255, 255, 255, 0.8)',
+                        borderRadius: '8px',
                       }
                     }}
                   />
@@ -793,16 +801,21 @@ Untuk informasi lebih lanjut kunjungi Instagram resmi 📝
                   <div className="relative">
                     <input
                       type="range"
-                      min={1}
-                      max={3}
+                      min={0.1}
+                      max={10}
                       step={0.1}
                       value={zoom}
                       onChange={(e) => setZoom(e.target.value)}
                       className="w-full h-3 bg-gradient-to-r from-white/20 to-white/10 backdrop-blur-md border border-white/30 rounded-full outline-none appearance-none cursor-pointer transition-all duration-300 hover:border-white/40 hover:shadow-lg hover:shadow-white/10 glassmorphism-slider"
                       style={{
-                        background: `linear-gradient(to right, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.4) ${((zoom - 1) / 2) * 100}%, rgba(255,255,255,0.1) ${((zoom - 1) / 2) * 100}%, rgba(255,255,255,0.1) 100%)`
+                        background: `linear-gradient(to right, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.4) ${((zoom - 0.1) / 9.9) * 100}%, rgba(255,255,255,0.1) ${((zoom - 0.1) / 9.9) * 100}%, rgba(255,255,255,0.1) 100%)`
                       }}
                     />
+                  </div>
+                  <div className="flex justify-between text-white/60 text-xs mt-2">
+                    <span>-</span>
+                    <span className="font-mono">{parseFloat(zoom).toFixed(1)}x</span>
+                    <span>+</span>
                   </div>
                 </div>
 
