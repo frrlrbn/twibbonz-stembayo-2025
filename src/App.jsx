@@ -325,10 +325,9 @@ function App() {
   }
 
   const generateCaption = () => {
-    return `𝐈'𝐦 𝐑𝐞𝐚𝐝𝐲 𝐅𝐨𝐫 𝐌𝐏𝐋𝐒 𝐒𝐌𝐊𝐍 𝟐 𝐃𝐞𝐩𝐨𝐤 𝟐𝟎𝟐𝟓 ⭐
+    return `𝐈'𝐦 𝐑𝐞𝐚𝐝𝐲 𝐅𝐨𝐫 𝐌𝐏𝐋𝐒 𝐒𝐓𝐄𝐌𝐁𝐀𝐘𝐎 𝟐𝟎𝟐𝟓 ⭐
 
 "𝚁𝚎𝚊𝚕𝚒𝚣𝚒𝚗𝚐 𝚊 𝚜𝚞𝚙𝚎𝚛𝚒𝚘𝚛 𝚐𝚎𝚗𝚎𝚛𝚊𝚝𝚒𝚘𝚗, 𝚌𝚑𝚊𝚛𝚊𝚌𝚝𝚎𝚛𝚒𝚣𝚎𝚍, 𝚌𝚘𝚖𝚙𝚎𝚝𝚎𝚗𝚝 𝚊𝚗𝚍 𝚎𝚗𝚟𝚒𝚛𝚘𝚗𝚖𝚎𝚗𝚝𝚊𝚕𝚕𝚢 𝚜𝚘𝚞𝚗𝚍"
-Mewujudkan generasi unggul, berkarakter, kompeten dan berwawasan lingkungan.
 
 Halo future leaders! 👋✨
 Saya ${captionData.namaLengkap || '(Nama lengkap)'} dari ${captionData.kelasJurusan || '(kelas & jurusan)'} Siap bergabung dalam Masa Pengenalan Lingkungan Sekolah dan menjadi bagian dari SMKN 2 Depok Sleman yang mewujudkan generasi unggul, berkarakter, kompeten dan berwawasan lingkungan 🌱
