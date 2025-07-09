@@ -7,10 +7,12 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <NotFound />,
   },
   {
     path: "/panitia", 
     element: <Panitia />,
+    errorElement: <NotFound />,
   },
   {
     path: "*",
