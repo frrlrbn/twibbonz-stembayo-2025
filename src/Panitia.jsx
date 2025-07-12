@@ -26,16 +26,17 @@ function Panitia() {
   const fileInputRef = useRef(null)
   const canvasRef = useRef(null)
 
-  // Check if device is mobile
+  // Check if device is mobile or tablet
   useEffect(() => {
     const checkMobile = () => {
-      // More strict mobile detection - only smartphones
+      // Support mobile phones and tablets
       const userAgent = navigator.userAgent.toLowerCase()
-      const isMobileUserAgent = /android.*mobile|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)
-      const isSmallScreen = window.innerWidth <= 480 // Only very small screens
+      const isMobileUserAgent = /android|iphone|ipod|ipad|tablet|blackberry|iemobile|opera mini/i.test(userAgent)
+      const isTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+      const isTabletOrMobile = window.innerWidth <= 1024 // Support up to tablet size
       
-      // Consider it mobile only if it's both mobile user agent AND small screen
-      const isMobileDevice = isMobileUserAgent && isSmallScreen
+      // Consider it mobile/tablet if it has touch capability and reasonable screen size
+      const isMobileDevice = (isMobileUserAgent || isTouch) && isTabletOrMobile
       
       setIsMobile(isMobileDevice)
     }
