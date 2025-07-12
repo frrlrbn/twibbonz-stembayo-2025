@@ -468,7 +468,14 @@ Untuk informasi lebih lanjut kunjungi Instagram resmi 📝
                 </div>
               </div>
 
-              <div className="pt-2 border-t border-white/20">
+              <div className="mt-4 pt-3 border-t border-white/30 rounded-2xl">
+            <p className="text-white/55 text-xs text-center">
+              Jika menemukan kendala pada website ini bisa menghubungi <a className="text-blue-200 hover:text-blue-300 transition-colors" href='https://api.whatsapp.com/send?phone=6281215219801&text=hai%20admint' target="_blank" 
+                rel="noopener noreferrer">admin website</a>
+            </p>
+          </div>
+
+              <div className="pt-2">
                 <p className="text-white/55 text-xs text-center">
               Made with 🤍 by <a 
                 className="text-white/60 hover:text-white transition-colors font-medium" 
